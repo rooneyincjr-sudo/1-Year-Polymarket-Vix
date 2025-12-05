@@ -12,12 +12,19 @@ OutcomeMapping = Mapping[str, Mapping[str, float]]
 
 
 def _identify_market_columns(prices: pd.DataFrame) -> Dict[str, Iterable[str]]:
+    columns = list(prices.columns)
+    slug_candidates = sorted(
+        {col.rsplit("_", 1)[0] for col in columns if "_" in col},
+        key=len,
+        reverse=True,
+    )
     groups: Dict[str, list[str]] = {}
-    for col in prices.columns:
-        if "_" in col:
-            base = col.rsplit("_", 1)[0]
-        else:
-            base = col
+    for col in columns:
+        base = col
+        for slug in slug_candidates:
+            if col == slug or col.startswith(f"{slug}_"):
+                base = slug
+                break
         groups.setdefault(base, []).append(col)
     return groups
 

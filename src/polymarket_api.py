@@ -113,7 +113,8 @@ def build_prices_table(macro_markets: List[dict], session: Session | None = None
         outcomes = market.get("outcomes") or []
         for idx, token_id in enumerate(tokens):
             label = outcomes[idx] if idx < len(outcomes) else f"leg{idx+1}"
-            col_name = slug if len(tokens) == 2 and idx == 0 else f"{slug}_{_clean_slug(label)}"
+            clean_label = _clean_slug(label) or f"leg{idx+1}"
+            col_name = f"{slug}_{clean_label}"
             df = fetch_price_history_for_token(token_id, start_ts=start_ts, end_ts=end_ts, session=s)
             if df.empty:
                 LOGGER.warning("No price history for %s (%s)", slug, token_id)
