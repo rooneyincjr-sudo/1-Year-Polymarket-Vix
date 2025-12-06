@@ -13,7 +13,5 @@ data/raw/vix/
 **/polymarket_macro_prices_2024.csv
 **/vix_2024.csv
 
-ls -la .gitignore
-cat .gitignore
-git rm -r --cached data/raw
-git add README.md requirements.txt main.py src notebooks results data/processed .gitignore
+.DS_Store
+*.code-workspace
