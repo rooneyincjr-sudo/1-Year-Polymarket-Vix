@@ -57,3 +57,4 @@ Key runtime dependencies (full list in `requirements.txt`):
 The Polymarket universe is narrowed in two passes:
 - **Keyword filter:** questions are matched against macro-economic keywords from `src/config.py` (`MACRO_KEYWORDS`). Only those markets continue to price collection.
 - **Manual curation:** the keyword-selected list is written to `data/raw/polymarket/macro_markets_curated.json` with an `include` flag. Set `include: false` to drop extraneous or off-topic markets before building uncertainty series. This curated file is read on subsequent runs, so edits persist without further API calls.
+# 1-Year-Polymarket-Vix
