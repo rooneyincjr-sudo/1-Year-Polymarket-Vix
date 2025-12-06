@@ -28,6 +28,8 @@ MACRO_KEYWORDS = [
 
 DATA_DIR = Path("data")
 RAW_DATA = DATA_DIR / "raw"
+RAW_POLYMARKET = RAW_DATA / "polymarket"
+RAW_VIX = RAW_DATA / "vix"
 PROCESSED_DATA = DATA_DIR / "processed"
 RESULTS_DIR = Path("results")
 
@@ -50,7 +52,10 @@ OUTCOME_VALUE_MAP = {
     # },
 }
 
-MIN_DATA_COMPLETENESS = 0.65
+MIN_DATA_COMPLETENESS = 0.80
 
 N_SPLITS = 5
 VIX_TICKER = "^VIX"
+
+# Reproducibility
+SEED = 42

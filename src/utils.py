@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import random
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable
@@ -39,4 +41,16 @@ def save_dataframe(df: pd.DataFrame, path: Path) -> None:
 
 
 LOGGER = get_logger("mui")
+
+
+def set_all_seeds(seed: int = config.SEED) -> None:
+    """Set seeds for reproducibility across common RNGs."""
+    random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    try:
+        import numpy as np
+
+        np.random.seed(seed)
+    except Exception:
+        LOGGER.debug("NumPy not available when setting seeds")
 

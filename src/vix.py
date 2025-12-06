@@ -1,38 +1,66 @@
-"""Download VIX data for 2024 using yfinance."""
-import pandas as pd
-import yfinance as yf
+"""Download VIX data for a given year using yfinance."""
+from __future__ import annotations
+
 from pathlib import Path
 
-# Output path
-OUTPUT_PATH = Path(__file__).parent.parent / "data" / "raw" / "vix_2024.csv"
+import pandas as pd
+import yfinance as yf
 
-def fetch_vix() -> pd.DataFrame:
-    """Download VIX data from Yahoo Finance for 2024."""
-    print("Downloading VIX data for 2024...")
+try:
+    from . import config
+    from .utils import LOGGER, ensure_directories
+except ImportError:
+    import sys
+
+    project_root = Path(__file__).resolve().parent.parent
+    sys.path.insert(0, str(project_root))
+    from src import config  # type: ignore
+    from src.utils import LOGGER, ensure_directories  # type: ignore
+
+
+def _year_bounds(year: int) -> tuple[str, str]:
+    """Return start/end ISO strings for the requested year."""
+    return (f"{year}-01-01", f"{year}-12-31")
+
+
+def fetch_vix(
+    ticker: str = config.VIX_TICKER,
+    year: int = config.YEAR,
+    output_path: Path | None = None,
+) -> pd.DataFrame:
+    """Download VIX data and store to `data/raw`.
     
-    data = yf.download("^VIX", start="2024-01-01", end="2024-12-31", progress=False)
-    
+    Uses config defaults so the pipeline is reproducible and parameterized by year.
+    """
+    start, end = _year_bounds(year)
+    target = output_path or config.RAW_VIX / f"vix_{year}.csv"
+    ensure_directories([target.parent])
+
+    LOGGER.info("Downloading %s data for %s", ticker, year)
+    data = yf.download(ticker, start=start, end=end, progress=False)
+
     if data.empty:
-        print("No VIX data downloaded")
+        LOGGER.warning("No VIX data downloaded for %s", year)
         return pd.DataFrame()
-    
-    # Handle multi-level column index from yfinance
+
     if isinstance(data.columns, pd.MultiIndex):
-        vix = data[("Close", "^VIX")].to_frame(name="VIX")
+        vix = data[("Close", ticker)].to_frame(name="VIX")
     else:
         vix = data[["Close"]].rename(columns={"Close": "VIX"})
-    
-    # Save to CSV
-    vix.to_csv(OUTPUT_PATH)
-    print(f"Saved VIX data to {OUTPUT_PATH} ({len(vix)} rows)")
-    
+
+    vix.to_csv(target)
+    LOGGER.info("Saved VIX data to %s (%s rows)", target, len(vix))
     return vix
 
 
 if __name__ == "__main__":
-    vix = fetch_vix()
-    if not vix.empty:
-        print(f"\nVIX data summary:")
-        print(f"  Date range: {vix.index.min().date()} to {vix.index.max().date()}")
-        print(f"  Data points: {len(vix)}")
-        print(f"  VIX range: {vix['VIX'].min():.2f} - {vix['VIX'].max():.2f}")
+    fetched = fetch_vix()
+    if not fetched.empty:
+        LOGGER.info(
+            "VIX summary | %s to %s | rows=%s | range=%.2f..%.2f",
+            fetched.index.min().date(),
+            fetched.index.max().date(),
+            len(fetched),
+            fetched["VIX"].min(),
+            fetched["VIX"].max(),
+        )

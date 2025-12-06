@@ -1,0 +1,19 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Raw data (keep processed/results)
+data/raw/
+data/raw/polymarket/
+data/raw/vix/
+**/markets_2024_cache.json
+**/macro_markets_curated.json
+**/polymarket_macro_prices_2024.csv
+**/vix_2024.csv
+
+ls -la .gitignore
+cat .gitignore
+git rm -r --cached data/raw
+git add README.md requirements.txt main.py src notebooks results data/processed .gitignore

@@ -38,7 +38,7 @@ def fetch_markets_2024(
     session: Session | None = None,
     limit: int = config.DEFAULT_REQUEST_LIMIT,
     use_cache: bool = True,
-    cache_path: Path | None = config.RAW_DATA / "markets_2024_cache.json",
+    cache_path: Path | None = config.RAW_POLYMARKET / "markets_2024_cache.json",
 ) -> List[dict]:
     """Fetch all markets from 2024 using pagination, with caching.
     
@@ -110,7 +110,7 @@ def is_macro_market(market: dict, keywords: Iterable[str] | None = None) -> bool
 
 
 def load_curated_markets(
-    curated_path: Path = config.RAW_DATA / "macro_markets_curated.json",
+    curated_path: Path = config.RAW_POLYMARKET / "macro_markets_curated.json",
 ) -> List[dict] | None:
     """Load manually curated markets list if it exists.
     
@@ -147,7 +147,7 @@ def load_curated_markets(
 
 def create_curated_file(
     markets: List[dict],
-    output_path: Path = config.RAW_DATA / "macro_markets_curated.json",
+    output_path: Path = config.RAW_POLYMARKET / "macro_markets_curated.json",
     sort_by_volume: bool = True,
 ) -> None:
     """Create a human-readable, editable version of the markets list.
@@ -183,7 +183,7 @@ def select_macro_markets(
     markets: List[dict] | None = None,
     session: Session | None = None,
     use_curated: bool = True,
-    curated_path: Path = config.RAW_DATA / "macro_markets_curated.json",
+    curated_path: Path = config.RAW_POLYMARKET / "macro_markets_curated.json",
 ) -> List[dict]:
     """Get macro markets, preferring the curated list if available.
     
@@ -406,7 +406,7 @@ def build_prices_table(
 # =============================================================================
 
 def fetch_and_save_prices(
-    output_path: Path = config.RAW_DATA / "polymarket_macro_prices_2024.csv",
+    output_path: Path = config.RAW_POLYMARKET / "polymarket_macro_prices_2024.csv",
 ) -> pd.DataFrame:
     """Run the full pipeline: fetch markets → filter → get prices → save.
     

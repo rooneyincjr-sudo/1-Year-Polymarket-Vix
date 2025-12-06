@@ -3,10 +3,19 @@ from __future__ import annotations
 
 from typing import Iterable, List
 
+import sys
+from pathlib import Path
+
 import pandas as pd
 
-from . import config
-from .utils import LOGGER, save_dataframe
+try:
+    from . import config
+    from .utils import LOGGER, save_dataframe
+except ImportError:
+    project_root = Path(__file__).resolve().parent.parent
+    sys.path.insert(0, str(project_root))
+    from src import config  # type: ignore
+    from src.utils import LOGGER, save_dataframe  # type: ignore
 
 
 def build_lagged_features(
@@ -20,13 +29,17 @@ def build_lagged_features(
 
 def merge_mui_vix(
     mui_path=config.PROCESSED_DATA / "mui_2024.csv",
-    vix_path=config.RAW_DATA / "vix_2024.csv",
+    vix_path=config.RAW_VIX / "vix_2024.csv",
     output_path=config.PROCESSED_DATA / "mui_and_vix_2024.csv",
     mui_lags: Iterable[int] = (0, 1, 2, 3, 5),
     vix_lags: Iterable[int] = (0, 1, 2, 3, 5),
 ) -> pd.DataFrame:
     mui = pd.read_csv(mui_path, index_col=0, parse_dates=True)
     vix = pd.read_csv(vix_path, index_col=0, parse_dates=True)
+
+    # Normalize indexes to be tz-naive daily datetimes so the join works.
+    mui.index = pd.to_datetime(mui.index).tz_localize(None)
+    vix.index = pd.to_datetime(vix.index).tz_localize(None)
 
     merged = mui.join(vix, how="inner")
     target = merged["VIX"].shift(-1).rename("VIX_target")
