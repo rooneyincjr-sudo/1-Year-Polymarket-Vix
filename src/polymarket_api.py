@@ -86,17 +86,43 @@ def fetch_price_history_for_token(
     fidelity: int = config.DEFAULT_FIDELITY_MINUTES,
     session: Session | None = None,
 ) -> pd.DataFrame:
+    """Fetch price history for a single outcome token with defensive fallbacks.
+
+    Polymarket's CLOB API has used both ``tokenId`` and ``market`` as the query
+    parameter for outcome-level price history. Previously we only sent the
+    ``market`` parameter, which now returns empty arrays for every token. To
+    guard against API changes, try both parameter names and return the first
+    non-empty payload.
+    """
+
     s = session or requests.Session()
-    params = {"market": token_id, "startTs": start_ts, "endTs": end_ts, "fidelity": fidelity}
-    resp = s.get(config.CLOB_HISTORY_URL, params=params, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    df = pd.DataFrame(data)
-    if df.empty:
-        return pd.DataFrame(columns=["timestamp", "price"])
-    df = df.rename(columns={"p": "price", "t": "timestamp"})[["timestamp", "price"]]
-    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", utc=True)
-    return df
+    param_variants = ("tokenId", "market")
+    base_params = {"startTs": start_ts, "endTs": end_ts, "fidelity": fidelity}
+    last_error: Exception | None = None
+
+    for key in param_variants:
+        params = {**base_params, key: token_id}
+        try:
+            resp = s.get(config.CLOB_HISTORY_URL, params=params, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:  # pragma: no cover - network dependent
+            last_error = exc
+            LOGGER.warning("Price fetch failed for %s via %s: %s", token_id, key, exc)
+            continue
+
+        df = pd.DataFrame(data)
+        if df.empty:
+            LOGGER.debug("Empty response for %s via %s", token_id, key)
+            continue
+
+        df = df.rename(columns={"p": "price", "t": "timestamp"})[["timestamp", "price"]]
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", utc=True)
+        return df
+
+    if last_error:
+        LOGGER.warning("No price history retrieved for %s (last error: %s)", token_id, last_error)
+    return pd.DataFrame(columns=["timestamp", "price"])
 
 
 def build_prices_table(macro_markets: List[dict], session: Session | None = None) -> pd.DataFrame:
