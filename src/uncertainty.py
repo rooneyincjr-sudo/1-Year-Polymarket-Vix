@@ -1,11 +1,20 @@
 """Convert Polymarket price series into per-market uncertainty measures."""
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Dict, Iterable, Mapping
+
 import pandas as pd
 
-from . import config
-from .utils import LOGGER, save_dataframe
+# Handle both relative and absolute imports
+try:
+    from . import config
+    from .utils import LOGGER, save_dataframe
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from src import config
+    from src.utils import LOGGER, save_dataframe
 
 
 OutcomeMapping = Mapping[str, Mapping[str, float]]
@@ -78,4 +87,8 @@ def process_and_save_uncertainty(
     LOGGER.info("Saved uncertainty series to %s", output_path)
     return uncertainty_df
 
+
+# Allow running as a script: python -m src.uncertainty
+if __name__ == "__main__":
+    process_and_save_uncertainty()
 

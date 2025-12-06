@@ -40,7 +40,7 @@ def build_mui(
 ) -> pd.DataFrame:
     uncertainty = pd.read_csv(uncertainty_path, index_col=0, parse_dates=True)
     filtered = filter_by_completeness(uncertainty)
-    standardized = _standardize(filtered.fillna(method="ffill").fillna(method="bfill"))
+    standardized = _standardize(filtered.ffill().bfill())
     mui_df = _run_pca(standardized)
     mui_df = mui_df.rename(columns={"PC1": "MUI"})
 
@@ -53,7 +53,7 @@ def build_mui(
             group_df = filter_by_completeness(group_df)
             if group_df.empty:
                 continue
-            standardized_group = _standardize(group_df.fillna(method="ffill").fillna(method="bfill"))
+            standardized_group = _standardize(group_df.ffill().bfill())
             comp = _run_pca(standardized_group)
             mui_df[f"MUI_{group_name}"] = comp.iloc[:, 0]
             LOGGER.info("Built sub-index for %s with %s markets", group_name, len(available))

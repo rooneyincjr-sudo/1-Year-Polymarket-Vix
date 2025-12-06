@@ -1,26 +1,38 @@
-"""Download VIX data using yfinance."""
-from __future__ import annotations
-
+"""Download VIX data for 2024 using yfinance."""
 import pandas as pd
 import yfinance as yf
+from pathlib import Path
 
-from . import config
-from .utils import LOGGER, save_dataframe
+# Output path
+OUTPUT_PATH = Path(__file__).parent.parent / "data" / "raw" / "vix_2024.csv"
 
-
-def fetch_vix(
-    ticker: str = config.VIX_TICKER,
-    start_date: str = config.START_DATE.date().isoformat(),
-    end_date: str = (config.END_DATE.date()).isoformat(),
-    output_path=config.RAW_DATA / "vix_2024.csv",
-) -> pd.DataFrame:
-    data = yf.download(ticker, start=start_date, end=end_date)
+def fetch_vix() -> pd.DataFrame:
+    """Download VIX data from Yahoo Finance for 2024."""
+    print("Downloading VIX data for 2024...")
+    
+    data = yf.download("^VIX", start="2024-01-01", end="2024-12-31", progress=False)
+    
     if data.empty:
-        LOGGER.warning("No VIX data downloaded for %s", ticker)
+        print("No VIX data downloaded")
         return pd.DataFrame()
-    vix = data[["Adj Close"]].rename(columns={"Adj Close": "VIX"})
-    save_dataframe(vix, output_path)
-    LOGGER.info("Saved VIX data to %s", output_path)
+    
+    # Handle multi-level column index from yfinance
+    if isinstance(data.columns, pd.MultiIndex):
+        vix = data[("Close", "^VIX")].to_frame(name="VIX")
+    else:
+        vix = data[["Close"]].rename(columns={"Close": "VIX"})
+    
+    # Save to CSV
+    vix.to_csv(OUTPUT_PATH)
+    print(f"Saved VIX data to {OUTPUT_PATH} ({len(vix)} rows)")
+    
     return vix
 
 
+if __name__ == "__main__":
+    vix = fetch_vix()
+    if not vix.empty:
+        print(f"\nVIX data summary:")
+        print(f"  Date range: {vix.index.min().date()} to {vix.index.max().date()}")
+        print(f"  Data points: {len(vix)}")
+        print(f"  VIX range: {vix['VIX'].min():.2f} - {vix['VIX'].max():.2f}")
