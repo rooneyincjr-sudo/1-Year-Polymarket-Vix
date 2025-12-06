@@ -101,12 +101,19 @@ def fetch_markets_2024(
 
 def is_macro_market(market: dict, keywords: Iterable[str] | None = None) -> bool:
     """Check if market question matches macro-economic keywords."""
-    text = market.get("question", "")
+    text = market.get("question") or market.get("title", "")
     if not text:
         return False
     words = keywords or config.MACRO_KEYWORDS
     lowered = text.lower()
-    return any(k.lower() in lowered for k in words)
+    
+    # Use word boundaries so short keywords (e.g., "rate") do not match
+    # unrelated words (e.g., "inaugurated").
+    for k in words:
+        pattern = r"\b" + re.escape(k.lower()).replace(r"\ ", r"\s+") + r"\b"
+        if re.search(pattern, lowered):
+            return True
+    return False
 
 
 def load_curated_markets(
@@ -127,8 +134,11 @@ def load_curated_markets(
         with curated_path.open("r") as f:
             markets = json.load(f)
         
-        # Filter to only included markets
-        included = [m for m in markets if m.get("include", True)]
+        # Filter to only included markets and enforce macro keyword criteria
+        included = [
+            m for m in markets
+            if m.get("include", True) and is_macro_market(m)
+        ]
         excluded = len(markets) - len(included)
         
         if excluded > 0:

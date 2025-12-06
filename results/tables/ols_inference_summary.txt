@@ -1,0 +1,34 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             VIX_target   R-squared:                       0.726
+Model:                            OLS   Adj. R-squared:                  0.713
+Method:                 Least Squares   F-statistic:                     69.27
+Date:                Sat, 06 Dec 2025   Prob (F-statistic):           1.75e-62
+Time:                        08:03:51   Log-Likelihood:                -464.90
+No. Observations:                 232   AIC:                             951.8
+Df Residuals:                     221   BIC:                             989.7
+Df Model:                          10                                         
+Covariance Type:                  HAC                                         
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+const          2.2256      0.728      3.058      0.002       0.799       3.652
+MUI_lag0      -0.4654      0.503     -0.926      0.354      -1.451       0.520
+MUI_lag1       0.5841      0.574      1.017      0.309      -0.542       1.710
+MUI_lag2      -0.5091      0.279     -1.824      0.068      -1.056       0.038
+MUI_lag3       0.3956      0.190      2.079      0.038       0.023       0.769
+MUI_lag5      -0.0021      0.109     -0.019      0.985      -0.215       0.211
+VIX_lag0       0.8649      0.088      9.839      0.000       0.693       1.037
+VIX_lag1       0.0607      0.120      0.506      0.613      -0.174       0.296
+VIX_lag2      -0.0637      0.097     -0.655      0.513      -0.254       0.127
+VIX_lag3      -0.0093      0.059     -0.159      0.874      -0.124       0.106
+VIX_lag5       0.0070      0.054      0.129      0.898      -0.099       0.113
+==============================================================================
+Omnibus:                      250.101   Durbin-Watson:                   2.019
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):            11257.706
+Skew:                           4.265   Prob(JB):                         0.00
+Kurtosis:                      36.043   Cond. No.                         210.
+==============================================================================
+
+Notes:
+[1] Standard Errors are heteroscedasticity and autocorrelation robust (HAC) using 5 lags and without small sample correction

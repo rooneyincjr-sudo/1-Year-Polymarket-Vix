@@ -151,12 +151,17 @@ def build_mui(
     meta = _load_market_meta()
     filtered = filter_by_completeness(uncertainty, meta=meta)
     # Fill within active windows only (avoid bleeding values outside windows)
-    filled = pd.DataFrame(index=filtered.index)
+    # Build columns first, then concat once to avoid fragmentation warnings.
+    filled_cols = []
     for col in filtered.columns:
         col_mask = filtered[col].notna()
         col_filled = filtered[col].ffill().bfill()
         col_mean = col_filled[col_mask].mean()
-        filled[col] = col_filled.where(col_mask, col_mean)
+        filled_col = col_filled.where(col_mask, col_mean)
+        filled_col.name = col
+        filled_cols.append(filled_col)
+
+    filled = pd.concat(filled_cols, axis=1) if filled_cols else pd.DataFrame(index=filtered.index)
 
     standardized = _standardize(filled)
     mui_df = _run_pca(standardized)

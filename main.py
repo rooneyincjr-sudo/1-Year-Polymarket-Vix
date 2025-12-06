@@ -104,12 +104,12 @@ def main():
         dataset = merge_mui_vix()
 
     # Step 6: Model training
-    importance_path = config.RESULTS_DIR / "tables" / "feature_importances.csv"
+    results_marker = config.RESULTS_DIR / "tables" / "model_feature_set_summary.csv"
     LOGGER.info("=" * 60)
     LOGGER.info("STEP 6: Training models with time-series CV")
     LOGGER.info("=" * 60)
-    if exists_and_nonempty(importance_path):
-        LOGGER.info("Model outputs already exist at %s; skipping training.", importance_path)
+    if exists_and_nonempty(results_marker):
+        LOGGER.info("Model outputs already exist at %s; skipping training.", results_marker)
         results = None
     else:
         results = run_models()
